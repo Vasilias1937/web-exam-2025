@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-12 col-lg-10">
+    <div class="card shadow p-4 mt-4">
+      <h2 class="mb-3 text-center">{{ recipe.name }}</h2>
+      {% if images %}
+      <div class="mb-4 text-center">
+        <div class="d-flex flex-wrap justify-content-center gap-3">
+          {% for photo in images %}
+          <img src="{{ url_for('static', filename='uploads/' ~ photo.filename) }}" alt="Фото блюда" class="img-thumbnail recipe-img-thumb" style="max-width: 200px;">
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+      <ul class="list-group mb-4">
+        <li class="list-group-item"><strong>Время приготовления:</strong> {{ recipe.cook_time }} мин</li>
+        <li class="list-group-item"><strong>Порций:</strong> {{ recipe.portions }}</li>
+        <li class="list-group-item"><strong>Автор:</strong> {% if recipe.author %}{{ recipe.author.first_name }} {{ recipe.author.last_name }}{% else %}Неизвестно{% endif %}</li>
+      </ul>
+      <div class="mb-4">
+        <h4>Описание</h4>
+        <div class="border rounded p-3 bg-light">{{ description_html|safe }}</div>
+      </div>
+      <div class="mb-4">
+        <h4>Ингредиенты</h4>
+        <div class="border rounded p-3 bg-light">{{ ingredients_html|safe }}</div>
+      </div>
+      <div class="mb-4">
+        <h4>Шаги приготовления</h4>
+        <div class="border rounded p-3 bg-light">{{ steps_html|safe }}</div>
+      </div>
+      <div class="mb-4">
+        <h4>Отзывы</h4>
+        {% if reviews %}
+          {% for feedback in reviews %}
+          <div class="card mb-2">
+            <div class="card-body">
+              <div>
+                <strong>{% if feedback.author %}{{ feedback.author.first_name }} {{ feedback.author.last_name }}{% else %}Неизвестно{% endif %}</strong>
+                <span class="ms-2"><i class="fas fa-star text-warning"></i> {{ feedback.score }}</span>
+              </div>
+              <div class="mt-2">{{ feedback.comment | markdown | safe }}</div>
+            </div>
+          </div>
+          {% endfor %}
+        {% else %}
+          <p>Пока нет отзывов.</p>
+        {% endif %}
+      </div>
+      {% if current_user.is_authenticated %}
+        {% set user_feedback = None %}
+        {% for feedback in reviews %}
+          {% if feedback.account_id == current_user.id %}
+            {% set user_feedback = feedback %}
+          {% endif %}
+        {% endfor %}
+        {% if not user_feedback %}
+          <a href="{{ url_for('add_feedback', dish_id=recipe.id) }}" class="btn btn-success mt-3">Написать отзыв</a>
+        {% else %}
+          <div class="alert alert-info mt-3">
+            <strong>Ваш отзыв:</strong>
+            <div class="mt-2">
+              <span class="me-2"><i class="fas fa-star text-warning"></i> {{ user_feedback.score }}</span>
+              <span>{{ user_feedback.comment | markdown | safe }}</span>
+            </div>
+          </div>
+        {% endif %}
+      {% endif %}
+      <div class="mb-3 text-center">
+        {% if current_user.is_authenticated %}
+          {% set is_admin = current_user.role and current_user.role.name == 'Администратор' %}
+          {% if recipe.account_id == current_user.id or is_admin %}
+            <a href="{{ url_for('edit_dish', id=recipe.id) }}" class="btn btn-warning me-2">Редактировать</a>
+            <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal">Удалить блюдо</button>
+          {% endif %}
+        {% endif %}
+      </div>
+      <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="deleteModalLabel">Удаление блюда</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+            </div>
+            <div class="modal-body">
+              Вы уверены, что хотите удалить блюдо <strong>{{ recipe.name }}</strong>?
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Нет</button>
+              <form method="post" action="{{ url_for('delete_dish', id=recipe.id) }}">
+                {{ form.hidden_tag() if form is defined }}
+                <button type="submit" class="btn btn-danger">Да</button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

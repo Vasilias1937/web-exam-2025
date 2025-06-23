@@ -1,0 +1,57 @@
+body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: linear-gradient(120deg, #f0f4f9 0%, #e0e7ef 100%);
+}
+
+.main-header, .main-footer {
+    background: #2d3e50;
+    color: #fff;
+}
+
+.card {
+    border-radius: 18px;
+    box-shadow: 0 2px 12px rgba(44,62,80,0.07);
+    border: none;
+}
+
+.card-title {
+    font-weight: 600;
+    color: #2d3e50;
+}
+
+.btn-primary, .btn-success, .btn-warning, .btn-danger {
+    border-radius: 20px;
+    font-weight: 500;
+    letter-spacing: 1px;
+    box-shadow: 0 2px 8px rgba(44,62,80,0.08);
+}
+
+.navbar, .navbar-brand, .nav-link {
+    font-size: 1.1rem;
+}
+
+input.form-control, textarea.form-control, select.form-select {
+    border-radius: 12px;
+    border: 1px solid #bfc9d1;
+}
+
+.alert {
+    border-radius: 12px;
+}
+
+h1, h2, h3, h4 {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    font-weight: 700;
+}
+
+/* Дополнительные стили для уникальности */
+.recipe-card-footer {
+    background: #f7fafd;
+    border-top: 1px solid #e0e7ef;
+    border-radius: 0 0 18px 18px;
+}
+
+.recipe-img-thumb {
+    border-radius: 12px;
+    border: 2px solid #e0e7ef;
+} 

@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-12 col-md-7 col-lg-6">
+    <div class="card shadow p-4 mt-4">
+      <h2 class="text-center mb-4">Оставить отзыв на блюдо "{{ recipe.name }}"</h2>
+      <form method="post" novalidate>
+        {{ form.hidden_tag() }}
+        {% for field in form %}
+          {% for error in field.errors %}
+            <div class="alert alert-danger">{{ error }}</div>
+          {% endfor %}
+        {% endfor %}
+        <div class="mb-3">
+          {{ form.score.label(class="form-label fw-bold") }}
+          {{ form.score(class="form-select") }}
+        </div>
+        <div class="mb-3">
+          {{ form.comment.label(class="form-label fw-bold") }}
+          {{ form.comment(class="form-control", id="review_text") }}
+        </div>
+        <button type="submit" class="btn btn-success w-100">Сохранить</button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://unpkg.com/easymde/dist/easymde.min.js"></script>
+<script>
+    new EasyMDE({ element: document.getElementById("review_text") });
+</script>
+{% endblock %}

@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% from "macros/forms.html" import dish_form %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-12 col-md-8 col-lg-7">
+    <div class="card shadow p-4 mt-4">
+      <h2 class="text-center mb-4">Редактировать блюдо</h2>
+      <form method="post">
+        {{ form.hidden_tag() }}
+        {% for field in form %}
+          {% for error in field.errors %}
+            <div class="alert alert-danger">{{ error }}</div>
+          {% endfor %}
+        {% endfor %}
+        {{ dish_form(form, show_photos=False) }}
+        <button type="submit" class="btn btn-warning w-100">Сохранить</button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script src="https://unpkg.com/easymde/dist/easymde.min.js"></script>
+<script>
+    new EasyMDE({ element: document.getElementById("details") });
+    new EasyMDE({ element: document.getElementById("components") });
+    new EasyMDE({ element: document.getElementById("instructions") });
+</script>
+{% endblock %}

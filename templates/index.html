@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1 class="mb-4 text-center">Свежие рецепты от пользователей</h1>
+<div class="row g-4 justify-content-center">
+    {% for recipe, avg_rating, reviews_count in recipes %}
+    <div class="col-12 col-md-6 col-lg-4 d-flex align-items-stretch">
+        <div class="card w-100 shadow recipe-card mb-3">
+            <div class="card-body d-flex flex-column">
+                <h3 class="card-title text-center mb-2">{{ recipe.name }}</h3>
+                <ul class="list-unstyled mb-3">
+                    <li><span class="fw-bold">⏱ Время:</span> {{ recipe.cook_time }} мин</li>
+                    <li><span class="fw-bold">🍽 Порций:</span> {{ recipe.portions }}</li>
+                    <li><span class="fw-bold">⭐ Оценка:</span> {% if reviews_count > 0 %}{{ avg_rating|round(1) }}{% else %}-{% endif %}</li>
+                    <li><span class="fw-bold">💬 Отзывов:</span> {{ reviews_count }}</li>
+                </ul>
+                <div class="mt-auto text-center">
+                    <a href="{{ url_for('view_dish', id=recipe.id) }}" class="btn btn-primary btn-sm px-4">Подробнее</a>
+                </div>
+            </div>
+            <div class="recipe-card-footer text-center py-2">
+                <small class="text-muted">Автор: {% if recipe.author %}{{ recipe.author.first_name }} {{ recipe.author.last_name }}{% else %}Неизвестно{% endif %}</small>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+<nav aria-label="Page navigation" class="mt-4">
+    <ul class="pagination justify-content-center">
+        {% if pagination.has_prev %}
+        <li class="page-item">
+            <a class="page-link" href="{{ url_for('home', page=pagination.prev_num) }}">Назад</a>
+        </li>
+        {% endif %}
+        {% for page in pagination.iter_pages() %}
+            {% if page %}
+                <li class="page-item {% if page == pagination.page %}active{% endif %}">
+                    <a class="page-link" href="{{ url_for('home', page=page) }}">{{ page }}</a>
+                </li>
+            {% else %}
+                <li class="page-item disabled"><span class="page-link">...</span></li>
+            {% endif %}
+        {% endfor %}
+        {% if pagination.has_next %}
+        <li class="page-item">
+            <a class="page-link" href="{{ url_for('home', page=pagination.next_num) }}">Вперёд</a>
+        </li>
+        {% endif %}
+    </ul>
+</nav>
+{% endblock %} 
