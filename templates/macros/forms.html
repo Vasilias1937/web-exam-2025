@@ -1,27 +1,27 @@
 {% macro dish_form(form, show_photos=True) %}
     <div class="mb-3">
-        {{ form.name.label(class="form-label") }}
-        {{ form.name(class="form-control") }}
+        {{ form.title.label(class="form-label") }}
+        {{ form.title(class="form-control") }}
     </div>
     <div class="mb-3">
-        {{ form.details.label(class="form-label") }}
-        {{ form.details(class="form-control", id="details") }}
+        {{ form.description.label(class="form-label") }}
+        {{ form.description(class="form-control", id="description") }}
     </div>
     <div class="mb-3">
-        {{ form.cook_time.label(class="form-label") }}
-        {{ form.cook_time(class="form-control") }}
+        {{ form.cooking_time.label(class="form-label") }}
+        {{ form.cooking_time(class="form-control") }}
     </div>
     <div class="mb-3">
-        {{ form.portions.label(class="form-label") }}
-        {{ form.portions(class="form-control") }}
+        {{ form.servings.label(class="form-label") }}
+        {{ form.servings(class="form-control") }}
     </div>
     <div class="mb-3">
-        {{ form.components.label(class="form-label") }}
-        {{ form.components(class="form-control", id="components") }}
+        {{ form.ingredients.label(class="form-label") }}
+        {{ form.ingredients(class="form-control", id="ingredients") }}
     </div>
     <div class="mb-3">
-        {{ form.instructions.label(class="form-label") }}
-        {{ form.instructions(class="form-control", id="instructions") }}
+        {{ form.steps.label(class="form-label") }}
+        {{ form.steps(class="form-control", id="steps") }}
     </div>
     {% if show_photos %}
     <div class="mb-3">

@@ -5,17 +5,17 @@ from wtforms.validators import DataRequired, NumberRange
 
 
 class DishForm(FlaskForm):
-    name = StringField('Название блюда', validators=[DataRequired()])
-    details = TextAreaField('Описание', validators=[DataRequired()])
-    cook_time = IntegerField('Время приготовления (мин)', validators=[DataRequired(), NumberRange(min=1)])
-    portions = IntegerField('Порции', validators=[DataRequired(), NumberRange(min=1)])
-    components = TextAreaField('Ингредиенты', validators=[DataRequired()])
-    instructions = TextAreaField('Шаги приготовления', validators=[DataRequired()])
+    title = StringField('Название блюда', validators=[DataRequired()])
+    description = TextAreaField('Описание', validators=[DataRequired()])
+    cooking_time = IntegerField('Время приготовления (мин)', validators=[DataRequired(), NumberRange(min=1)])
+    servings = IntegerField('Порции', validators=[DataRequired(), NumberRange(min=1)])
+    ingredients = TextAreaField('Ингредиенты', validators=[DataRequired()])
+    steps = TextAreaField('Шаги приготовления', validators=[DataRequired()])
     photos = MultipleFileField('Фотографии')
 
 
 class FeedbackForm(FlaskForm):
-    score = SelectField(
+    rating = SelectField(
         'Оценка',
         choices=[
             (5, 'отлично'),
@@ -32,6 +32,15 @@ class FeedbackForm(FlaskForm):
 
 
 class AuthForm(FlaskForm):
-    login = StringField('Логин', validators=[DataRequired()])
+    username = StringField('Логин', validators=[DataRequired()])
     password = PasswordField('Пароль', validators=[DataRequired()])
-    remember_me = BooleanField('Запомнить меня') 
+    remember_me = BooleanField('Запомнить меня')
+
+
+class RegisterForm(FlaskForm):
+    username = StringField('Логин', validators=[DataRequired()])
+    password = PasswordField('Пароль', validators=[DataRequired()])
+    last_name = StringField('Фамилия', validators=[DataRequired()])
+    first_name = StringField('Имя', validators=[DataRequired()])
+    middle_name = StringField('Отчество')
+    role_id = SelectField('Роль', coerce=int, validators=[DataRequired()]) 

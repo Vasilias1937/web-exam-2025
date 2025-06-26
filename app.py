@@ -4,13 +4,13 @@ import os
 from sqlalchemy import func
 import bleach
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
-from werkzeug.security import check_password_hash
+from werkzeug.security import check_password_hash, generate_password_hash
 from dotenv import load_dotenv
 import pymysql
 import logging
 
 from models import db, Dish, Account, Photo, Feedback, UserRole
-from forms import DishForm, FeedbackForm, AuthForm
+from forms import DishForm, FeedbackForm, AuthForm, RegisterForm
 from markupsafe import Markup
 import markdown
 
@@ -46,7 +46,7 @@ login_manager.login_message_category = 'warning'
 def load_account(account_id):
     return db.session.get(Account, int(account_id))
 
-def save_photos(photo_files, dish_id):
+def save_photos(photo_files, recipe_id):
     """Сохраняет фотографии блюда и добавляет записи в БД."""
     for photo in photo_files:
         if photo.filename:
@@ -54,12 +54,16 @@ def save_photos(photo_files, dish_id):
             mime_type = photo.mimetype
             path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
             photo.save(path)
-            photo_obj = Photo(filename=filename, mime_type=mime_type, dish_id=dish_id)
+            photo_obj = Photo(filename=filename, mime_type=mime_type, recipe_id=recipe_id)
             db.session.add(photo_obj)
     db.session.commit()
 
 def is_dish_name_unique(name):
-    return not Dish.query.filter_by(name=name).first()
+    return not Dish.query.filter_by(title=name).first()
+
+def can_edit_or_delete_recipe(dish, user):
+    is_admin = user.role and user.role.name == 'Администратор'
+    return is_admin or dish.user_id == user.id
 
 @app.route('/')
 @login_required
@@ -69,10 +73,10 @@ def home():
     dishes_query = (
         db.session.query(
             Dish,
-            func.coalesce(func.avg(Feedback.score), 0).label('avg_score'),
+            func.coalesce(func.avg(Feedback.rating), 0).label('avg_score'),
             func.count(Feedback.id).label('feedbacks_count')
         )
-        .outerjoin(Feedback, Feedback.dish_id == Dish.id)
+        .outerjoin(Feedback, Feedback.recipe_id == Dish.id)
         .group_by(Dish.id)
         .order_by(Dish.created_at.desc())
     )
@@ -85,20 +89,20 @@ def home():
 def create_dish():
     form = DishForm()
     if form.validate_on_submit():
-        if not is_dish_name_unique(form.name.data):
+        if not is_dish_name_unique(form.title.data):
             flash('Блюдо с таким названием уже существует.', 'danger')
             return render_template('add_recipe.html', form=form)
-        details = bleach.clean(form.details.data)
-        components = bleach.clean(form.components.data)
-        instructions = bleach.clean(form.instructions.data)
+        description = bleach.clean(form.description.data)
+        ingredients = bleach.clean(form.ingredients.data)
+        steps = bleach.clean(form.steps.data)
         dish = Dish(
-            name=form.name.data,
-            details=details,
-            cook_time=form.cook_time.data,
-            portions=form.portions.data,
-            components=components,
-            instructions=instructions,
-            account_id=current_user.id
+            title=form.title.data,
+            description=description,
+            cooking_time=form.cooking_time.data,
+            servings=form.servings.data,
+            ingredients=ingredients,
+            steps=steps,
+            user_id=current_user.id
         )
         try:
             db.session.add(dish)
@@ -118,18 +122,17 @@ def create_dish():
 @login_required
 def edit_dish(id):
     dish = Dish.query.get_or_404(id)
-    is_admin = current_user.role and current_user.role.name == 'Администратор'
-    if dish.account_id != current_user.id and not is_admin:
+    if not can_edit_or_delete_recipe(dish, current_user):
         flash('У вас недостаточно прав для редактирования этого блюда', 'danger')
         return redirect(url_for('home'))
     form = DishForm(obj=dish)
     if form.validate_on_submit():
-        dish.name = form.name.data
-        dish.details = form.details.data
-        dish.cook_time = form.cook_time.data
-        dish.portions = form.portions.data
-        dish.components = form.components.data
-        dish.instructions = form.instructions.data
+        dish.title = form.title.data
+        dish.description = form.description.data
+        dish.cooking_time = form.cooking_time.data
+        dish.servings = form.servings.data
+        dish.ingredients = form.ingredients.data
+        dish.steps = form.steps.data
         try:
             db.session.commit()
             flash('Блюдо успешно обновлено!', 'success')
@@ -144,11 +147,11 @@ def edit_dish(id):
 @login_required
 def view_dish(id):
     dish = Dish.query.get_or_404(id)
-    photos = Photo.query.filter_by(dish_id=dish.id).all()
-    feedbacks = Feedback.query.filter_by(dish_id=dish.id).all()
-    details_html = Markup(markdown.markdown(dish.details, extensions=['extra']))
-    components_html = Markup(markdown.markdown(dish.components, extensions=['extra']))
-    instructions_html = Markup(markdown.markdown(dish.instructions, extensions=['extra']))
+    photos = Photo.query.filter_by(recipe_id=dish.id).all()
+    feedbacks = Feedback.query.filter_by(recipe_id=dish.id).all()
+    details_html = Markup(markdown.markdown(dish.description, extensions=['extra']))
+    components_html = Markup(markdown.markdown(dish.ingredients, extensions=['extra']))
+    instructions_html = Markup(markdown.markdown(dish.steps, extensions=['extra']))
     return render_template(
         'view_recipe.html',
         recipe=dish,
@@ -163,6 +166,9 @@ def view_dish(id):
 @login_required
 def delete_dish(id):
     dish = Dish.query.get_or_404(id)
+    if not can_edit_or_delete_recipe(dish, current_user):
+        flash('У вас недостаточно прав для удаления этого блюда', 'danger')
+        return redirect(url_for('home'))
     try:
         for photo in dish.photos:
             photo_path = os.path.join(app.config['UPLOAD_FOLDER'], photo.filename)
@@ -183,17 +189,17 @@ def add_feedback(dish_id):
     dish = Dish.query.get_or_404(dish_id)
     form = FeedbackForm()
     user_id = current_user.id
-    existing_feedback = Feedback.query.filter_by(dish_id=dish_id, account_id=user_id).first()
+    existing_feedback = Feedback.query.filter_by(recipe_id=dish_id, user_id=user_id).first()
     if existing_feedback:
         flash('Вы уже оставляли отзыв на это блюдо.', 'warning')
         return redirect(url_for('view_dish', id=dish_id))
     if form.validate_on_submit():
-        comment = bleach.clean(form.comment.data)
+        text = bleach.clean(form.comment.data)
         feedback = Feedback(
-            dish_id=dish_id,
-            account_id=user_id,
-            score=form.score.data,
-            comment=comment
+            recipe_id=dish_id,
+            user_id=user_id,
+            rating=form.rating.data,
+            text=text
         )
         try:
             db.session.add(feedback)
@@ -215,7 +221,7 @@ def login_view():
     form = AuthForm()
     error = None
     if form.validate_on_submit():
-        account = Account.query.filter_by(login=form.login.data).first()
+        account = Account.query.filter_by(username=form.username.data).first()
         if account and check_password_hash(account.password_hash, form.password.data):
             login_user(account, remember=form.remember_me.data)
             return redirect(url_for('home'))
@@ -229,6 +235,34 @@ def logout_view():
     logout_user()
     flash('Вы вышли из аккаунта.', 'success')
     return redirect(url_for('login_view'))
+
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    form = RegisterForm()
+    # Подгружаем роли для выбора
+    form.role_id.choices = [(role.id, role.name) for role in UserRole.query.all()]
+    error = None
+    if form.validate_on_submit():
+        if Account.query.filter_by(username=form.username.data).first():
+            error = 'Пользователь с таким логином уже существует.'
+        else:
+            new_user = Account(
+                username=form.username.data,
+                password_hash=generate_password_hash(form.password.data),
+                last_name=form.last_name.data,
+                first_name=form.first_name.data,
+                middle_name=form.middle_name.data,
+                role_id=form.role_id.data
+            )
+            try:
+                db.session.add(new_user)
+                db.session.commit()
+                flash('Регистрация успешна! Теперь вы можете войти.', 'success')
+                return redirect(url_for('login_view'))
+            except Exception as e:
+                db.session.rollback()
+                error = 'Ошибка при регистрации пользователя.'
+    return render_template('register.html', form=form, error=error)
 
 if __name__ == '__main__':
     port = int(os.getenv('PORT', 5000))

@@ -22,10 +22,5 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="https://unpkg.com/easymde/dist/easymde.min.js"></script>
-<script>
-    new EasyMDE({ element: document.getElementById("description") });
-    new EasyMDE({ element: document.getElementById("ingredients") });
-    new EasyMDE({ element: document.getElementById("steps") });
-</script>
+<!-- EasyMDE отключён, используется обычное textarea -->
 {% endblock %}

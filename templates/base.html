@@ -8,23 +8,20 @@
     <link rel="stylesheet" href="/static/custom.css">
     {% block extra_css %}{% endblock %}
     <style>
+        html, body {
+            height: 100%;
+        }
         body {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
             background: linear-gradient(120deg, #f0f4f9 0%, #e0e7ef 100%);
         }
-        .main-header {
-            background: #2d3e50;
-            color: #fff;
-            padding: 30px 0 10px 0;
-            border-bottom-left-radius: 30px;
-            border-bottom-right-radius: 30px;
-            box-shadow: 0 4px 12px rgba(44,62,80,0.08);
-        }
-        .main-header h1 {
-            font-family: 'Segoe UI', sans-serif;
-            font-weight: 700;
-            letter-spacing: 2px;
+        main.container {
+            flex: 1 0 auto;
         }
         .main-footer {
+            flex-shrink: 0;
             background: #2d3e50;
             color: #fff;
             padding: 18px 0 10px 0;
@@ -63,6 +60,7 @@
                                 <a class="nav-link" href="{{ url_for('logout_view') }}">Выйти</a>
                             {% else %}
                                 <a class="nav-link" href="{{ url_for('login_view') }}">Войти</a>
+                                <a class="nav-link" href="{{ url_for('register') }}">Регистрация</a>
                             {% endif %}
                         </li>
                     </ul>

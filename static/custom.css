@@ -54,4 +54,43 @@ h1, h2, h3, h4 {
 .recipe-img-thumb {
     border-radius: 12px;
     border: 2px solid #e0e7ef;
+}
+
+input:focus, textarea:focus, select:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 0 2px rgba(0,123,255,0.2);
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+textarea {
+    resize: vertical;
+    min-height: 80px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+/* Стили для EasyMDE (CodeMirror) */
+.EasyMDEContainer .CodeMirror {
+    min-height: 120px;
+    max-height: 600px;
+    height: auto !important;
+    resize: vertical;
+    border: 2px solid #e0e7ef;
+    border-radius: 6px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    box-shadow: none;
+    overflow-x: hidden !important;
+    white-space: pre-wrap !important;
+    word-break: break-word !important;
+}
+.EasyMDEContainer .CodeMirror-focused {
+    border-color: #007bff;
+    box-shadow: 0 0 0 2px rgba(0,123,255,0.2);
+}
+
+/* Убираем горизонтальный скролл */
+.EasyMDEContainer .CodeMirror-scroll {
+    overflow-x: hidden !important;
+    white-space: pre-wrap !important;
+    word-break: break-word !important;
 } 

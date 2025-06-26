@@ -4,19 +4,19 @@
 <div class="row justify-content-center">
   <div class="col-12 col-lg-10">
     <div class="card shadow p-4 mt-4">
-      <h2 class="mb-3 text-center">{{ recipe.name }}</h2>
+      <h2 class="mb-3 text-center">{{ recipe.title }}</h2>
       {% if images %}
       <div class="mb-4 text-center">
         <div class="d-flex flex-wrap justify-content-center gap-3">
           {% for photo in images %}
-          <img src="{{ url_for('static', filename='uploads/' ~ photo.filename) }}" alt="Фото блюда" class="img-thumbnail recipe-img-thumb" style="max-width: 200px;">
+          <img src="{{ url_for('static', filename='uploads/' ~ photo.filename) }}" alt="Фото блюда" style="width: 70%; height: 350px; object-fit: contain; background: #fff; margin-bottom: 20px; display: block; margin-left: auto; margin-right: auto; border: none;">
           {% endfor %}
         </div>
       </div>
       {% endif %}
       <ul class="list-group mb-4">
-        <li class="list-group-item"><strong>Время приготовления:</strong> {{ recipe.cook_time }} мин</li>
-        <li class="list-group-item"><strong>Порций:</strong> {{ recipe.portions }}</li>
+        <li class="list-group-item"><strong>Время приготовления:</strong> {{ recipe.cooking_time }} мин</li>
+        <li class="list-group-item"><strong>Порций:</strong> {{ recipe.servings }}</li>
         <li class="list-group-item"><strong>Автор:</strong> {% if recipe.author %}{{ recipe.author.first_name }} {{ recipe.author.last_name }}{% else %}Неизвестно{% endif %}</li>
       </ul>
       <div class="mb-4">
@@ -39,9 +39,9 @@
             <div class="card-body">
               <div>
                 <strong>{% if feedback.author %}{{ feedback.author.first_name }} {{ feedback.author.last_name }}{% else %}Неизвестно{% endif %}</strong>
-                <span class="ms-2"><i class="fas fa-star text-warning"></i> {{ feedback.score }}</span>
+                <span class="ms-2"><i class="fas fa-star text-warning"></i> {{ feedback.rating }}</span>
               </div>
-              <div class="mt-2">{{ feedback.comment | markdown | safe }}</div>
+              <div class="mt-2">{{ feedback.text | markdown | safe }}</div>
             </div>
           </div>
           {% endfor %}
@@ -62,8 +62,8 @@
           <div class="alert alert-info mt-3">
             <strong>Ваш отзыв:</strong>
             <div class="mt-2">
-              <span class="me-2"><i class="fas fa-star text-warning"></i> {{ user_feedback.score }}</span>
-              <span>{{ user_feedback.comment | markdown | safe }}</span>
+              <span class="me-2"><i class="fas fa-star text-warning"></i> {{ user_feedback.rating }}</span>
+              <span>{{ user_feedback.text | markdown | safe }}</span>
             </div>
           </div>
         {% endif %}
@@ -85,7 +85,7 @@
               <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
             </div>
             <div class="modal-body">
-              Вы уверены, что хотите удалить блюдо <strong>{{ recipe.name }}</strong>?
+              Вы уверены, что хотите удалить блюдо <strong>{{ recipe.title }}</strong>?
             </div>
             <div class="modal-footer">
               <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Нет</button>
